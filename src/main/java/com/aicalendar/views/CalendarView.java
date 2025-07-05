@@ -6,13 +6,16 @@ import java.io.IOException;
 public class CalendarView extends AppViewBase {
 
     public CalendarView() {
-        super();
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("calendar.fxml"));
-            setCenter(loader.load());
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to load calendar.fxml", e);
-        }
+        setOnShowing(e -> {
+            if (getCenter() == null) {
+                try {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/aicalendar/views/calendar.fxml"));
+                    setCenter(loader.load());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
         setupBottomNavigation();
     }
 }

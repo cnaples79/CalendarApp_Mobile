@@ -58,6 +58,8 @@ dependencies {
 }
 
 run {
+    systemProperty 'gluon.license.skip', 'true'
+    systemProperty 'gluon.tracking.skip', 'true'
     doFirst {
         jvmArgs = [
             '--module-path', configurations.runtimeClasspath.filter { it.name.startsWith('javafx-') }.asPath,
