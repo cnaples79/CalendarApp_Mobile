@@ -34,10 +34,10 @@ dependencies {
             implementation "com.gluonhq:charm-glisten:${gluonGlistenVersion}"
 
     // Manually add JavaFX dependencies for desktop 'run' task
-    implementation "org.openjfx:javafx-controls:${javafxVersion}:mac"
-    implementation "org.openjfx:javafx-graphics:${javafxVersion}:mac"
-    implementation "org.openjfx:javafx-fxml:${javafxVersion}:mac"
-    implementation "org.openjfx:javafx-base:${javafxVersion}:mac"
+        implementation "org.openjfx:javafx-controls:${javafxVersion}:mac-aarch64"
+        implementation "org.openjfx:javafx-graphics:${javafxVersion}:mac-aarch64"
+        implementation "org.openjfx:javafx-fxml:${javafxVersion}:mac-aarch64"
+        implementation "org.openjfx:javafx-base:${javafxVersion}:mac-aarch64"
 
 
 
@@ -47,7 +47,16 @@ dependencies {
 
     // Testing
     testImplementation 'org.spockframework:spock-core:2.3-groovy-4.0'
-    testImplementation 'junit:junit:4.13.2'
+        testImplementation 'junit:junit:4.13.2'
+}
+
+run {
+    doFirst {
+        jvmArgs = [
+            '--module-path', configurations.runtimeClasspath.filter { it.name.startsWith('javafx-') }.asPath,
+            '--add-modules', 'javafx.controls,javafx.fxml,javafx.graphics'
+        ]
+    }
 }
 
 java {

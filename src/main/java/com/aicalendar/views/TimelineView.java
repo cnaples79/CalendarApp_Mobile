@@ -1,19 +1,18 @@
 package com.aicalendar.views;
 
 import com.gluonhq.charm.glisten.mvc.View;
-import com.gluonhq.charm.glisten.control.AppBar;
-import javafx.scene.control.Label;
-import javafx.geometry.Pos;
+import javafx.fxml.FXMLLoader;
+import java.io.IOException;
 
 public class TimelineView extends View {
-
     public TimelineView() {
-        setCenter(new Label("Timeline View"));
-        getStyleClass().add("timeline-view");
-    }
-
-    @Override
-    protected void updateAppBar(AppBar appBar) {
-        appBar.setTitleText("Timeline");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("timeline.fxml"));
+            loader.setRoot(this);
+            loader.setController(this);
+            loader.load();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

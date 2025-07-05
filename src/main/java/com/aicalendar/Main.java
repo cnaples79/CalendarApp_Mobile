@@ -1,40 +1,44 @@
 package com.aicalendar;
 
+import com.aicalendar.views.CalendarView;
+import com.aicalendar.views.ChatView;
+import com.aicalendar.views.TimelineView;
 import com.gluonhq.charm.glisten.application.AppManager;
-import com.gluonhq.charm.glisten.control.BottomNavigation;
-import com.gluonhq.charm.glisten.application.MobileApplication;
-import com.gluonhq.charm.glisten.control.BottomNavigation;
-import com.gluonhq.charm.glisten.control.BottomNavigationButton;
 import com.gluonhq.charm.glisten.visual.Swatch;
+import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
-import javafx.scene.image.Image;
+import javafx.stage.Stage;
 
-import static com.aicalendar.AppView.CALENDAR;
+import static com.gluonhq.charm.glisten.application.AppManager.HOME_VIEW;
 
-public class Main extends MobileApplication {
+public class Main extends Application {
+
+    public static final String CALENDAR_VIEW = HOME_VIEW;
+    public static final String CHAT_VIEW = "Chat";
+    public static final String TIMELINE_VIEW = "Timeline";
+
+    private final AppManager appManager = AppManager.initialize(this::postInit);
 
     @Override
     public void init() {
-        BottomNavigation bottomNavigation = createBottomNavigation();
-        for (AppView view : AppView.values()) {
-            view.register(this, bottomNavigation);
-        }
+        appManager.addViewFactory(CALENDAR_VIEW, () -> new CalendarView());
+        appManager.addViewFactory(CHAT_VIEW, () -> new ChatView());
+        appManager.addViewFactory(TIMELINE_VIEW, () -> new TimelineView());
     }
 
     @Override
-    public void postInit(Scene scene) {
-        Swatch.BLUE.assignTo(scene);
-        scene.getStylesheets().add(Main.class.getResource("style.css").toExternalForm());
-
+    public void start(Stage primaryStage) throws Exception {
+        appManager.start(primaryStage);
     }
 
-    private BottomNavigation createBottomNavigation() {
-        BottomNavigation bottomNavigation = new BottomNavigation();
-        for (AppView view : AppView.values()) {
-            BottomNavigationButton button = new BottomNavigationButton(view.getTitle(), view.getIcon().graphic(), e -> switchView(view.name()));
-            bottomNavigation.getActionItems().add(button);
-        }
-        return bottomNavigation;
+    private void postInit(Scene scene) {
+        Swatch.BLUE.assignTo(scene);
+        scene.getStylesheets().add(Main.class.getResource("style.css").toExternalForm());
+        ((Stage) scene.getWindow()).getIcons().add(new Image(Main.class.getResourceAsStream("/icon.png")));
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 }
