@@ -1,19 +1,19 @@
 package com.aicalendar.views;
 
 import com.gluonhq.charm.glisten.mvc.View;
+import com.gluonhq.charm.glisten.control.AppBar;
 import javafx.scene.control.Label;
 import javafx.geometry.Pos;
 
 public class TimelineView extends View {
 
     public TimelineView() {
-        Label label = new Label("Timeline View");
-        setCenter(label);
+        setCenter(new Label("Timeline View"));
         getStyleClass().add("timeline-view");
     }
 
     @Override
-    protected void updateAppBar(com.gluonhq.charm.glisten.control.AppBar appBar) {
+    protected void updateAppBar(AppBar appBar) {
         appBar.setTitleText("Timeline");
     }
 }

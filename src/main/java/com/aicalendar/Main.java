@@ -2,50 +2,39 @@ package com.aicalendar;
 
 import com.gluonhq.charm.glisten.application.AppManager;
 import com.gluonhq.charm.glisten.control.BottomNavigation;
-import com.gluonhq.charm.glisten.control.NavigationButton;
+import com.gluonhq.charm.glisten.application.MobileApplication;
+import com.gluonhq.charm.glisten.control.BottomNavigation;
+import com.gluonhq.charm.glisten.control.BottomNavigationButton;
 import com.gluonhq.charm.glisten.visual.Swatch;
-import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
-import javafx.stage.Stage;
+import javafx.scene.image.Image;
 
 import static com.aicalendar.AppView.CALENDAR;
 
-public class Main extends Application {
-
-    private final AppManager appManager = AppManager.initialize(this::postInit);
+public class Main extends MobileApplication {
 
     @Override
     public void init() {
+        BottomNavigation bottomNavigation = createBottomNavigation();
         for (AppView view : AppView.values()) {
-            view.register(appManager);
+            view.register(this, bottomNavigation);
         }
     }
 
     @Override
-    public void start(Stage stage) {
-        appManager.start(stage);
+    public void postInit(Scene scene) {
+        Swatch.BLUE.assignTo(scene);
+        scene.getStylesheets().add(Main.class.getResource("style.css").toExternalForm());
+        getIcons().add(new Image(Main.class.getResourceAsStream("/icon.png")));
     }
 
-    private void postInit(Scene scene) {
-        Swatch.BLUE.assignTo(scene);
-
-        scene.getStylesheets().add(Main.class.getResource("style.css").toExternalForm());
-        ((Stage) scene.getWindow()).getIcons().add(new Image(Main.class.getResourceAsStream("/icon.png")));
-
-        // Add BottomNavigation
+    private BottomNavigation createBottomNavigation() {
         BottomNavigation bottomNavigation = new BottomNavigation();
         for (AppView view : AppView.values()) {
-            NavigationButton button = new NavigationButton(view.getTitle(), view.getIcon().graphic(), e -> appManager.switchView(view.name()));
+            BottomNavigationButton button = new BottomNavigationButton(view.getTitle(), view.getIcon().graphic(), e -> switchView(view.name()));
             bottomNavigation.getActionItems().add(button);
         }
-        appManager.getLayout().setBottom(bottomNavigation);
-
-        // Start with the Calendar view
-        appManager.switchView(CALENDAR.name());
-    }
-
-    public static void main(String[] args) {
-        launch(args);
+        return bottomNavigation;
     }
 }

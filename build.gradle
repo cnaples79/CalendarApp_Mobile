@@ -1,11 +1,22 @@
-plugins {
-    id 'java'
-    id 'groovy'
-    id 'application'
-    
-    id 'org.openjfx.javafxplugin' version '0.1.0'
-    id 'com.gluonhq.gluonfx-gradle-plugin' version '1.0.26'
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+        maven {
+            url 'https://nexus.gluonhq.com/nexus/content/repositories/releases'
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.gluonhq:gluonfx-gradle-plugin:1.0.26'
+    }
 }
+
+apply plugin: 'java'
+apply plugin: 'groovy'
+apply plugin: 'application'
+apply plugin: 'com.gluonhq.gluonfx-gradle-plugin'
 
 repositories {
     mavenCentral()
@@ -15,7 +26,7 @@ repositories {
 }
 
 def groovyVersion = '4.0.4'
-def gluonGlistenVersion = '6.2.2'
+def gluonGlistenVersion = '6.2.3'
 
 dependencies {
         implementation "org.apache.groovy:groovy-all:${groovyVersion}"
@@ -42,10 +53,7 @@ application {
     mainClassName = 'com.aicalendar.Main'
 }
 
-javafx {
-    version = "17.0.2"
-    modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.graphics', 'javafx.web', 'javafx.media' ]
-}
+
 
 gluonfx {
 

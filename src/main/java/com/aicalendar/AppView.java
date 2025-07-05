@@ -1,6 +1,8 @@
 package com.aicalendar;
 
-import com.gluonhq.charm.glisten.application.AppManager;
+import com.gluonhq.charm.glisten.application.MobileApplication;
+import com.gluonhq.charm.glisten.control.BottomNavigation;
+import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.aicalendar.views.CalendarView;
 import com.aicalendar.views.ChatView;
@@ -36,7 +38,11 @@ public enum AppView {
         return icon;
     }
 
-    public void register(AppManager appManager) {
-        appManager.addViewFactory(name(), viewSupplier);
+    public void register(MobileApplication app, BottomNavigation bottomNavigation) {
+        app.addViewFactory(name(), () -> {
+            View view = (View) viewSupplier.get();
+            view.setBottom(bottomNavigation);
+            return view;
+        });
     }
 }

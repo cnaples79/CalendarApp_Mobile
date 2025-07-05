@@ -1,19 +1,19 @@
 package com.aicalendar.views;
 
 import com.gluonhq.charm.glisten.mvc.View;
+import com.gluonhq.charm.glisten.control.AppBar;
 import javafx.scene.control.Label;
 import javafx.geometry.Pos;
 
 public class ChatView extends View {
 
     public ChatView() {
-        Label label = new Label("Chat View");
-        setCenter(label);
+        setCenter(new Label("Chat View"));
         getStyleClass().add("chat-view");
     }
 
     @Override
-    protected void updateAppBar(com.gluonhq.charm.glisten.control.AppBar appBar) {
+    protected void updateAppBar(AppBar appBar) {
         appBar.setTitleText("Chat");
     }
 }
