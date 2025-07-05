@@ -4,8 +4,7 @@ import com.aicalendar.views.CalendarView;
 import com.aicalendar.views.ChatView;
 import com.aicalendar.views.TimelineView;
 import com.gluonhq.charm.glisten.application.AppManager;
-import com.gluonhq.charm.glisten.application.DrawerManager;
-import com.gluonhq.charm.glisten.mvc.Drawer;
+
 import com.gluonhq.charm.glisten.visual.Swatch;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -29,7 +28,7 @@ public class Main extends Application {
         AppManager.getInstance().addViewFactory(CHAT_VIEW, () -> new ChatView());
         AppManager.getInstance().addViewFactory(TIMELINE_VIEW, () -> new TimelineView());
 
-        DrawerManager.getInstance().setDrawer(new Drawer());
+
     }
 
     @Override
