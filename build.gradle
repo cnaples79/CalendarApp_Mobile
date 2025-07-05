@@ -27,10 +27,17 @@ repositories {
 
 def groovyVersion = '4.0.4'
 def gluonGlistenVersion = '6.2.3'
+def javafxVersion = '17.0.10'
 
 dependencies {
         implementation "org.apache.groovy:groovy-all:${groovyVersion}"
-        implementation "com.gluonhq:charm-glisten:${gluonGlistenVersion}"
+            implementation "com.gluonhq:charm-glisten:${gluonGlistenVersion}"
+
+    // Manually add JavaFX dependencies for desktop 'run' task
+    implementation "org.openjfx:javafx-controls:${javafxVersion}:mac"
+    implementation "org.openjfx:javafx-graphics:${javafxVersion}:mac"
+    implementation "org.openjfx:javafx-fxml:${javafxVersion}:mac"
+    implementation "org.openjfx:javafx-base:${javafxVersion}:mac"
 
 
 

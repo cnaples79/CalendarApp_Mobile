@@ -26,7 +26,7 @@ public class Main extends MobileApplication {
     public void postInit(Scene scene) {
         Swatch.BLUE.assignTo(scene);
         scene.getStylesheets().add(Main.class.getResource("style.css").toExternalForm());
-        getIcons().add(new Image(Main.class.getResourceAsStream("/icon.png")));
+
     }
 
     private BottomNavigation createBottomNavigation() {
