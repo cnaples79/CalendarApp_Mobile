@@ -12,16 +12,18 @@ import static com.aicalendar.Main.TIMELINE_VIEW;
 
 public abstract class AppViewBase extends View {
 
-    public AppViewBase() {
-        // The super constructor of View (which is a BorderPane) is called implicitly.
+        private final AppManager appManager;
+
+    public AppViewBase(AppManager appManager) {
+        this.appManager = appManager;
     }
 
     protected void setupBottomNavigation() {
         BottomNavigation bottomNavigation = new BottomNavigation();
 
-        BottomNavigationButton calendarButton = new BottomNavigationButton("Calendar", MaterialDesignIcon.DATE_RANGE.graphic(), e -> AppManager.getInstance().switchView(CALENDAR_VIEW));
-        BottomNavigationButton chatButton = new BottomNavigationButton("Chat", MaterialDesignIcon.CHAT.graphic(), e -> AppManager.getInstance().switchView(CHAT_VIEW));
-        BottomNavigationButton timelineButton = new BottomNavigationButton("Timeline", MaterialDesignIcon.TIMELINE.graphic(), e -> AppManager.getInstance().switchView(TIMELINE_VIEW));
+        BottomNavigationButton calendarButton = new BottomNavigationButton("Calendar", MaterialDesignIcon.DATE_RANGE.graphic(), e -> appManager.switchView(CALENDAR_VIEW));
+        BottomNavigationButton chatButton = new BottomNavigationButton("Chat", MaterialDesignIcon.CHAT.graphic(), e -> appManager.switchView(CHAT_VIEW));
+        BottomNavigationButton timelineButton = new BottomNavigationButton("Timeline", MaterialDesignIcon.TIMELINE.graphic(), e -> appManager.switchView(TIMELINE_VIEW));
 
         bottomNavigation.getActionItems().addAll(calendarButton, chatButton, timelineButton);
 

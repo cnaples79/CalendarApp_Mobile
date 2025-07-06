@@ -21,19 +21,18 @@ public class Main extends Application {
     public static final String CHAT_VIEW = "Chat";
     public static final String TIMELINE_VIEW = "Timeline";
 
+    private final AppManager appManager = AppManager.initialize(this::postInit);
+
     @Override
     public void init() {
-        AppManager.initialize(this::postInit);
-        AppManager.getInstance().addViewFactory(CALENDAR_VIEW, () -> new CalendarView());
-        AppManager.getInstance().addViewFactory(CHAT_VIEW, () -> new ChatView());
-        AppManager.getInstance().addViewFactory(TIMELINE_VIEW, () -> new TimelineView());
-
-
+        appManager.addViewFactory(CALENDAR_VIEW, () -> new CalendarView());
+        appManager.addViewFactory(CHAT_VIEW, () -> new ChatView());
+        appManager.addViewFactory(TIMELINE_VIEW, () -> new TimelineView());
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        AppManager.getInstance().start(primaryStage);
+        appManager.start(primaryStage);
     }
 
     private void postInit(Scene scene) {
