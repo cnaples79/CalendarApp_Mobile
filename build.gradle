@@ -58,8 +58,6 @@ dependencies {
 }
 
 run {
-    systemProperty 'gluon.license.skip', 'true'
-    systemProperty 'gluon.tracking.skip', 'true'
     doFirst {
         jvmArgs = [
             '--module-path', configurations.runtimeClasspath.filter { it.name.startsWith('javafx-') }.asPath,
@@ -81,6 +79,12 @@ application {
 
 
 gluonfx {
+    desktop {
+        systemProperties = [
+            'gluon.license.skip': 'true',
+            'gluon.tracking.skip': 'true'
+        ]
+    }
 
     // Gluon Attach services can be added here later if needed
     // e.g., for accessing device-specific features
