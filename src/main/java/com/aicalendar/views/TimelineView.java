@@ -1,13 +1,14 @@
 package com.aicalendar.views;
 
+import com.aicalendar.CalendarService;
 import com.gluonhq.charm.glisten.application.AppManager;
 import javafx.fxml.FXMLLoader;
 import java.io.IOException;
 
 public class TimelineView extends AppViewBase {
 
-    public TimelineView(AppManager appManager) {
-        super(appManager);
+        public TimelineView(AppManager appManager, CalendarService calendarService) {
+        super(appManager, calendarService);
 
         setOnShowing(e -> {
             if (getCenter() == null) {

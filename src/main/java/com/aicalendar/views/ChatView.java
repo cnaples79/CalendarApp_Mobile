@@ -1,13 +1,14 @@
 package com.aicalendar.views;
 
+import com.aicalendar.CalendarService;
 import com.gluonhq.charm.glisten.application.AppManager;
 import javafx.fxml.FXMLLoader;
 import java.io.IOException;
 
 public class ChatView extends AppViewBase {
 
-    public ChatView(AppManager appManager) {
-        super(appManager);
+        public ChatView(AppManager appManager, CalendarService calendarService) {
+        super(appManager, calendarService);
 
         setOnShowing(e -> {
             if (getCenter() == null) {

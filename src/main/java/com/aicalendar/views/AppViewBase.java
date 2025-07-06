@@ -5,6 +5,7 @@ import com.gluonhq.charm.glisten.control.BottomNavigation;
 import com.gluonhq.charm.glisten.control.BottomNavigationButton;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
+import com.aicalendar.CalendarService;
 
 import static com.aicalendar.Main.CALENDAR_VIEW;
 import static com.aicalendar.Main.CHAT_VIEW;
@@ -12,10 +13,12 @@ import static com.aicalendar.Main.TIMELINE_VIEW;
 
 public abstract class AppViewBase extends View {
 
-        private final AppManager appManager;
+            protected final AppManager appManager;
+    protected final CalendarService calendarService;
 
-    public AppViewBase(AppManager appManager) {
+        public AppViewBase(AppManager appManager, CalendarService calendarService) {
         this.appManager = appManager;
+        this.calendarService = calendarService;
     }
 
     protected void setupBottomNavigation() {
