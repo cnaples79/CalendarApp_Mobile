@@ -1,26 +1,26 @@
 package com.aicalendar.views;
 
-import com.gluonhq.charm.glisten.application.AppManager;
 import com.gluonhq.charm.glisten.control.BottomNavigation;
 import com.gluonhq.charm.glisten.control.BottomNavigationButton;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.aicalendar.CalendarService;
-import java.util.logging.Logger;
+import com.aicalendar.services.CalendarService;
+import com.gluonhq.charm.glisten.application.AppManager;
+import com.gluonhq.charm.glisten.mvc.View;
 
-import static com.aicalendar.Main.CALENDAR_VIEW;
-import static com.aicalendar.Main.CHAT_VIEW;
-import static com.aicalendar.Main.TIMELINE_VIEW;
+import java.util.logging.Logger;
 
 public abstract class AppViewBase extends View {
 
     private static final Logger LOG = Logger.getLogger(AppViewBase.class.getName());
 
-            protected final AppManager appManager;
+    protected final AppManager appManager;
     protected final CalendarService calendarService;
 
-    public AppViewBase(AppManager appManager, CalendarService calendarService) {
-        LOG.info("Constructing AppViewBase for: " + getClass().getSimpleName());
+    public AppViewBase(String viewName, AppManager appManager, CalendarService calendarService) {
+        super(viewName);
+        LOG.info("Constructing AppViewBase for: " + viewName);
         this.appManager = appManager;
         this.calendarService = calendarService;
     }

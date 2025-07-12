@@ -1,7 +1,8 @@
 package com.aicalendar.views;
 
-import com.aicalendar.AIService;
-import com.aicalendar.CalendarService;
+import com.aicalendar.models.ChatMessage;
+import com.aicalendar.services.AIService;
+import com.aicalendar.services.CalendarService;
 import com.gluonhq.charm.glisten.application.AppManager;
 import com.gluonhq.charm.glisten.control.CharmListCell;
 import com.gluonhq.charm.glisten.control.CharmListView;
@@ -14,10 +15,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
-import javafx.concurrent.Service;
-import javafx.concurrent.Task;
 
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ChatView extends AppViewBase {
@@ -25,71 +25,56 @@ public class ChatView extends AppViewBase {
     private static final Logger LOG = Logger.getLogger(ChatView.class.getName());
 
     @FXML
-    private CharmListView<ChatMessage, Comparable<?>> messageListView;
+    private CharmListView<ChatMessage, String> chatArea;
 
     @FXML
-    private TextField messageTextField;
+    private TextField messageInput;
 
     @FXML
     private Button sendButton;
 
     private final ObservableList<ChatMessage> messages = FXCollections.observableArrayList();
-        private final AIService aiService;
+    private final AIService aiService;
 
     public ChatView(AppManager appManager, CalendarService calendarService) {
-        super(appManager, calendarService);
+        super("ChatView", appManager, calendarService);
         LOG.info("Constructing ChatView");
         this.aiService = new AIService(calendarService);
 
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("chat.fxml"));
+            loader.setController(this);
+            setCenter(loader.load());
+        } catch (IOException e) {
+            LOG.log(Level.SEVERE, "Error loading FXML for ChatView", e);
+            throw new RuntimeException(e);
+        }
+
         setOnShowing(e -> {
             LOG.info("ChatView is showing");
-            if (getCenter() == null) {
-                try {
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/aicalendar/views/chat.fxml"));
-                    loader.setController(this);
-                    setCenter(loader.load());
-                    initialize();
-                } catch (IOException ex) {
-                    System.err.println("Error loading chat.fxml: " + ex.getMessage());
-                    ex.printStackTrace();
-                }
-            }
-            setupBottomNavigation();
+            chatArea.setItems(messages);
         });
     }
 
+    @FXML
     private void initialize() {
-        messageListView.setItems(messages);
-        messageListView.setCellFactory(p -> new MessageCell());
-        messages.add(new ChatMessage("Hello! How can I help you plan your day?", false));
+        chatArea.setCellFactory(p -> new ChatMessageCell());
+        sendButton.setOnAction(e -> sendMessage());
+        messageInput.setOnAction(e -> sendMessage());
     }
 
-    @FXML
     private void sendMessage() {
-        String text = messageTextField.getText();
-        if (text == null || text.trim().isEmpty()) {
-            return;
-        }
+        String text = messageInput.getText().trim();
+        if (!text.isEmpty()) {
+            messages.add(new ChatMessage(text, true));
+            messageInput.clear();
 
-        messages.add(new ChatMessage(text, true));
-        messageTextField.clear();
-        sendButton.setDisable(true);
-
-        Service<String> service = new Service<>() {
-            @Override
-            protected Task<String> createTask() {
-                return new Task<>() {
-                    @Override
-                    protected String call() throws Exception {
-                        return aiService.getAIResponse(text).getTextResponse();
-                    }
-                };
+            String aiResponse = aiService.getAIResponse(text);
+            messages.add(new ChatMessage(aiResponse, false));
+                // This will trigger the listeners in CalendarView and TimelineView
+                calendarService.eventsUpdatedProperty().set(!calendarService.eventsUpdatedProperty().get());
             }
-        };
 
-        service.setOnSucceeded(e -> {
-            messages.add(new ChatMessage(service.getValue(), false));
-            messageListView.scrollTo(messages.size() - 1);
             sendButton.setDisable(false);
         });
 

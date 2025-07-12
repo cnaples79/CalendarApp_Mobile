@@ -1,111 +1,117 @@
 package com.aicalendar.views;
 
-import com.aicalendar.CalendarService;
-import com.aicalendar.Event;
+import com.aicalendar.abstracts.AppViewBase;
+import com.aicalendar.models.Event;
+import com.aicalendar.services.CalendarService;
 import com.gluonhq.charm.glisten.application.AppManager;
+import com.gluonhq.charm.glisten.control.CharmListView;
+import com.gluonhq.charm.glisten.control.ListTile;
+import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import com.gluonhq.charm.glisten.control.CharmListView;
-import com.gluonhq.charm.glisten.control.CharmListCell;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
-import com.gluonhq.charm.glisten.control.ProgressIndicator;
-import java.util.logging.Logger;
-import javafx.concurrent.Service;
-import javafx.concurrent.Task;
-import java.time.format.DateTimeFormatter;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.Comparator;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class CalendarView extends AppViewBase {
 
     private static final Logger LOG = Logger.getLogger(CalendarView.class.getName());
 
     @FXML
-    private CharmListView<Event, Comparable<?>> eventListView;
+    private CharmListView<Event, LocalDate> eventList;
+
+    @FXML
+    private Label dateLabel;
 
     public CalendarView(AppManager appManager, CalendarService calendarService) {
-        super(appManager, calendarService);
+        super("CalendarView", appManager, calendarService);
         LOG.info("Constructing CalendarView");
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("calendar.fxml"));
+            loader.setController(this);
+            setCenter(loader.load());
+        } catch (IOException e) {
+            LOG.log(Level.SEVERE, "Error loading FXML for CalendarView", e);
+            throw new RuntimeException(e);
+        }
 
         setOnShowing(e -> {
             LOG.info("CalendarView is showing");
-            if (getCenter() == null) {
-                try {
-                    FXMLLoader loader = new FXMLLoader(CalendarView.class.getResource("calendar.fxml"));
-                    loader.setController(this);
-                    setCenter(loader.load());
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+            if (dateLabel != null) {
+                dateLabel.setText(LocalDate.now().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)));
             }
-            setupBottomNavigation();
-            initialize();
+            loadEvents();
         });
     }
 
-    private void initialize() {
-        // Set a placeholder for when the list is empty or loading
-        ProgressIndicator progressIndicator = new ProgressIndicator();
-        eventListView.setPlaceholder(progressIndicator);
+    @FXML
+    public void initialize() {
+        eventList.setCellFactory(p -> new EventCell());
+        eventList.setComparator(Comparator.comparing(Event::getDateTime));
+        eventList.setHeadersFunction(event -> event.getDateTime().toLocalDate());
+        eventList.setHeaderCellFactory(p -> new DateHeaderCell());
+    }
 
-        // Use a service to load data in the background
-        Service<ObservableList<Event>> service = new Service<>() {
-            @Override
-            protected Task<ObservableList<Event>> createTask() {
-                return new Task<>() {
-                    @Override
-                    protected ObservableList<Event> call() throws Exception {
-                        // This is a background thread
-                        return FXCollections.observableArrayList(calendarService.getAllEvents());
-                    }
-                };
-            }
-        };
-
-        service.setOnSucceeded(e -> {
-            // This is the FX Application Thread
-            eventListView.setItems(service.getValue());
-        });
-
-        service.setOnFailed(e -> {
-            // Handle error, e.g., show an error message
-            System.err.println("Failed to load events: " + service.getException());
-            service.getException().printStackTrace();
-            eventListView.setPlaceholder(new Label("Error loading events."));
-        });
-
-        service.start();
-        eventListView.setCellFactory(p -> new EventCell());
+    private void loadEvents() {
+        List<Event> eventsForToday = calendarService.getEventsForDate(LocalDate.now());
+        eventList.setItems(FXCollections.observableArrayList(eventsForToday));
     }
 
     private static class EventCell extends CharmListCell<Event> {
-        private final VBox container;
-        private final Label titleLabel;
-        private final Label timeLabel;
+        private final ListTile tile = new ListTile();
+        private final Label titleLabel = new Label();
+        private final Label timeLabel = new Label();
 
         public EventCell() {
-            titleLabel = new Label();
-            titleLabel.setStyle("-fx-font-weight: bold;");
-            timeLabel = new Label();
-            container = new VBox(titleLabel, timeLabel);
-            container.setSpacing(5);
+            tile.setPrimaryGraphic(MaterialDesignIcon.EVENT.graphic());
+            tile.textProperty().setAll(titleLabel, timeLabel);
+            setText(null);
         }
 
         @Override
         public void updateItem(Event item, boolean empty) {
             super.updateItem(item, empty);
-            if (empty || item == null) {
-                setText(null);
-                setGraphic(null);
-            } else {
+            if (item != null && !empty) {
                 titleLabel.setText(item.getTitle());
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a");
-                String time = item.getStartTime().format(formatter) + " - " + item.getEndTime().format(formatter);
-                timeLabel.setText(time);
-                setGraphic(container);
+                timeLabel.setText(item.getDateTime().toLocalTime().format(DateTimeFormatter.ofPattern("h:mm a")));
+                setGraphic(tile);
+            } else {
+                setGraphic(null);
+            }
+        }
+    }
+
+    private static class DateHeaderCell extends CharmListCell<Event> {
+        private final Label label = new Label();
+
+        public DateHeaderCell() {
+            getStyleClass().add("date-header");
+            setGraphic(label);
+            setText(null);
+        }
+
+        @Override
+        public void updateItem(Event item, boolean empty) {
+            super.updateItem(item, empty);
+            if (item != null && getHeadersFunction() != null) {
+                LocalDate headerDate = getHeadersFunction().apply(item);
+                if (headerDate != null) {
+                    label.setText(headerDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)));
+                } else {
+                    label.setText("");
+                }
+            } else {
+                label.setText("");
             }
         }
     }

@@ -1,15 +1,27 @@
 package com.aicalendar
 
+import groovy.transform.CompileStatic
+import javafx.beans.property.BooleanProperty
+import javafx.beans.property.SimpleBooleanProperty
+
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-
-import groovy.transform.CompileStatic
 
 @CompileStatic
 class CalendarService {
 
     private List<Event> events = []
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+    private final BooleanProperty eventsUpdated = new SimpleBooleanProperty(false)
+
+    public BooleanProperty eventsUpdatedProperty() {
+        return eventsUpdated
+    }
+
+    private void notifyUpdate() {
+        // Toggling the value ensures a change event is always fired.
+        eventsUpdated.set(!eventsUpdated.get())
+    }
 
     CalendarService() {
         // Initialize with some mock events
@@ -25,12 +37,14 @@ class CalendarService {
         events.add(newEvent)
         println "CalendarService: Added event: ${newEvent}"
         println "CalendarService: Total events now: ${events.size()}"
+        notifyUpdate()
     }
 
     void addEvent(Event event) { // Overloaded method to directly add an Event object
         events.add(event)
         println "CalendarService: Added event object: ${event}"
         println "CalendarService: Total events now: ${events.size()}"
+        notifyUpdate()
     }
 
     List<Event> getEvents(LocalDateTime from, LocalDateTime to) {
@@ -53,6 +67,7 @@ class CalendarService {
             existingEvent.endTime = eventWithNewDetails.endTime
             existingEvent.description = eventWithNewDetails.description
             println "CalendarService: Updated event ID ${eventId}: ${existingEvent}"
+            notifyUpdate()
             return true
         } else {
             println "CalendarService: Update failed. Event ID ${eventId} not found."
@@ -64,6 +79,7 @@ class CalendarService {
         boolean removed = events.removeIf { it.id == eventId }
         if (removed) {
             println "CalendarService: Deleted event ID ${eventId}"
+            notifyUpdate()
         } else {
             println "CalendarService: Delete failed. Event ID ${eventId} not found."
         }

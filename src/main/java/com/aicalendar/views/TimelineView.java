@@ -1,88 +1,67 @@
 package com.aicalendar.views;
 
-import com.aicalendar.CalendarService;
-import com.aicalendar.Event;
+import com.aicalendar.models.Event;
+import com.aicalendar.services.CalendarService;
 import com.gluonhq.charm.glisten.application.AppManager;
 import com.gluonhq.charm.glisten.control.CharmListCell;
 import com.gluonhq.charm.glisten.control.CharmListView;
+import com.gluonhq.charm.glisten.control.ListTile;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
 import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
-import com.gluonhq.charm.glisten.control.ProgressIndicator;
-import javafx.concurrent.Service;
-import javafx.concurrent.Task;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.Comparator;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TimelineView extends AppViewBase {
 
     private static final Logger LOG = Logger.getLogger(TimelineView.class.getName());
 
     @FXML
-    private CharmListView<Event, Comparable<?>> timelineListView;
+    private CharmListView<Event, LocalDate> timelineList;
 
     public TimelineView(AppManager appManager, CalendarService calendarService) {
-        super(appManager, calendarService);
+        super("TimelineView", appManager, calendarService);
         LOG.info("Constructing TimelineView");
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("timeline.fxml"));
+            loader.setController(this);
+            setCenter(loader.load());
+        } catch (IOException e) {
+            LOG.log(Level.SEVERE, "Error loading FXML for TimelineView", e);
+            throw new RuntimeException(e);
+        }
 
         setOnShowing(e -> {
             LOG.info("TimelineView is showing");
-            if (getCenter() == null) {
-                try {
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/aicalendar/views/timeline.fxml"));
-                    loader.setController(this);
-                    setCenter(loader.load());
-                    initialize();
-                } catch (IOException ex) {
-                    System.err.println("Error loading timeline.fxml: " + ex.getMessage());
-                    ex.printStackTrace();
-                }
-            }
-            setupBottomNavigation();
+            loadEvents();
         });
     }
 
+    @FXML
     private void initialize() {
-        ProgressIndicator progressIndicator = new ProgressIndicator();
-        timelineListView.setPlaceholder(progressIndicator);
+        timelineList.setCellFactory(p -> new TimelineEventCell());
+        timelineList.setComparator(Comparator.comparing(Event::getDateTime));
+        timelineList.setHeadersFunction(event -> event.getDateTime().toLocalDate());
+        timelineList.setHeaderCellFactory(p -> new DateHeaderCell());
+    }
 
-        Service<ObservableList<Event>> service = new Service<>() {
-            @Override
-            protected Task<ObservableList<Event>> createTask() {
-                return new Task<>() {
-                    @Override
-                    protected ObservableList<Event> call() throws Exception {
-                        LocalDate today = LocalDate.now();
-                        LocalDateTime startOfDay = today.atStartOfDay();
-                        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay().minusNanos(1);
-                        return FXCollections.observableArrayList(calendarService.getEvents(startOfDay, endOfDay));
-                    }
-                };
-            }
-        };
-
-        service.setOnSucceeded(e -> {
-            timelineListView.setItems(service.getValue());
-        });
-
-        service.setOnFailed(e -> {
-            System.err.println("Failed to load timeline events: " + service.getException());
+    private void loadEvents() {
+        List<Event> allEvents = calendarService.getAllEvents();
+        timelineList.setItems(FXCollections.observableArrayList(allEvents));
             service.getException().printStackTrace();
             timelineListView.setPlaceholder(new Label("Error loading timeline."));
         });
 
         service.start();
-        timelineListView.setCellFactory(p -> new TimelineEventCell());
     }
 
     private static class TimelineEventCell extends CharmListCell<Event> {

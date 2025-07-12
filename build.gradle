@@ -1,51 +1,39 @@
 plugins {
-    id 'groovy'
+    id 'java'
     id 'application'
     id 'com.gluonhq.gluonfx-gradle-plugin' version '1.0.26'
+    id 'groovy'
 }
-
-group   = 'com.aicalendar'
-version = '1.0.0'
 
 repositories {
     mavenCentral()
-    maven { url 'https://nexus.gluonhq.com/nexus/content/repositories/releases' }
-}
-
-def groovyVersion       = '4.0.4'
-def gluonGlistenVersion = '6.2.3'
-def attachVersion       = '4.0.17'
-def javafxVersion       = '17.0.10'
-
-dependencies {
-    implementation "org.apache.groovy:groovy:${groovyVersion}"
-    implementation "org.apache.groovy:groovy-json:${groovyVersion}"
-    implementation "com.gluonhq:charm-glisten:$gluonGlistenVersion"
-    implementation "com.gluonhq.attach:display:$attachVersion"
-    implementation "com.gluonhq.attach:storage:$attachVersion"
-    implementation "com.gluonhq.attach:lifecycle:$attachVersion"
-    implementation "com.gluonhq.attach:statusbar:$attachVersion"
-    implementation 'org.apache.httpcomponents.client5:httpclient5:5.1.4'
-    implementation "org.openjfx:javafx-controls:${javafxVersion}:mac-aarch64"
-    implementation "org.openjfx:javafx-fxml:${javafxVersion}:mac-aarch64"
-    implementation "org.openjfx:javafx-graphics:${javafxVersion}:mac-aarch64"
-    implementation "org.openjfx:javafx-base:${javafxVersion}:mac-aarch64"
-    testImplementation 'org.spockframework:spock-core:2.3-groovy-4.0'
-}
-
-application {
-    // mobile entry point
-    mainClass = 'com.aicalendar.Main'
-    run {
-        jvmArgs = ['--module-path', configurations.runtimeClasspath.asPath, '--add-modules', 'javafx.controls,javafx.fxml,javafx.graphics,javafx.base']
-        systemProperties = [
-            'glisten.license': 'false',
-            'glisten.tracking.disabled': 'true'
-        ]
+    maven {
+        url 'https://nexus.gluonhq.com/nexus/content/repositories/releases'
     }
 }
 
+application {
+    mainClass = 'com.aicalendar.Main'
+}
 
+dependencies {
+    implementation 'org.apache.groovy:groovy:4.0.4'
+    implementation 'org.apache.groovy:groovy-json:4.0.4'
+    implementation 'com.gluonhq:glisten:6.2.3'
+    implementation 'com.gluonhq.attach:display:4.0.13'
+    implementation 'com.gluonhq.attach:storage:4.0.13'
+    implementation 'com.gluonhq.attach:lifecycle:4.0.13'
+    implementation 'com.gluonhq.attach:statusbar:4.0.13'
+
+    // JavaFX dependencies for Apple Silicon
+    def platform = "mac-aarch64"
+    implementation "org.openjfx:javafx-base:17.0.10:${platform}"
+    implementation "org.openjfx:javafx-graphics:17.0.10:${platform}"
+    implementation "org.openjfx:javafx-controls:17.0.10:${platform}"
+    implementation "org.openjfx:javafx-fxml:17.0.10:${platform}"
+
+    testImplementation 'org.spockframework:spock-core:2.3-groovy-4.0'
+}
 
 sourceSets {
     main {
@@ -59,6 +47,22 @@ sourceSets {
 }
 
 gluonfx {
-    target 'android'
-    target 'ios'
+    enableLicenseVerification = false
+    enableTracking = false
+    graalvmHome = '/Users/chasenaples/Downloads/graalvm-svm-java23-gluon-24.1.0-dev-macos-aarch64'
+    release {
+        // for android
+        android {
+            appLabel = 'AI Calendar'
+            versionCode = '1'
+            versionName = '1.0'
+        }
+        // for ios
+        ios {
+            bundleName = 'AI Calendar'
+            bundleVersion = '1.0'
+            bundleShortVersion = '1.0'
+            appIdentifier = 'com.aicalendar.mobile'
+        }
+    }
 }
