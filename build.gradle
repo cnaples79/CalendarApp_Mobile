@@ -1,120 +1,40 @@
-buildscript {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-        maven {
-            url 'https://nexus.gluonhq.com/nexus/content/repositories/releases'
-        }
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.gluonhq:gluonfx-gradle-plugin:1.0.26'
-    }
+plugins {
+    id 'groovy'
+    id 'application'
+    id 'com.gluonhq.gluonfx-gradle-plugin' version '1.0.32'
 }
 
-apply plugin: 'java'
-apply plugin: 'groovy'
-apply plugin: 'application'
-apply plugin: 'com.gluonhq.gluonfx-gradle-plugin'
+group   = 'com.aicalendar'
+version = '1.0.0'
 
 repositories {
     mavenCentral()
-    maven {
-        url 'https://nexus.gluonhq.com/nexus/content/repositories/releases'
-    }
+    maven { url 'https://nexus.gluonhq.com/nexus/content/repositories/releases' }
 }
 
-sourceSets {
-    main {
-        java {
-            srcDirs = []
-        }
-        groovy {
-            srcDirs = ['src/main/groovy', 'src/main/java']
-        }
-    }
-}
-
-def groovyVersion = '4.0.4'
+def groovyVersion       = '4.0.4'
 def gluonGlistenVersion = '6.2.3'
-def attachVersion = '4.0.17'
-def javafxVersion = '17.0.10'
+def attachVersion       = '4.0.17'
 
 dependencies {
-        implementation "org.apache.groovy:groovy-all:${groovyVersion}"
-            implementation "com.gluonhq:charm-glisten:${gluonGlistenVersion}"
-
-            // Gluon Attach for device services
-            implementation "com.gluonhq.attach:display:${attachVersion}"
-            implementation "com.gluonhq.attach:storage:${attachVersion}"
-            implementation "com.gluonhq.attach:lifecycle:${attachVersion}"
-            implementation "com.gluonhq.attach:statusbar:${attachVersion}"
-
-    // Manually add JavaFX dependencies for desktop 'run' task
-        implementation "org.openjfx:javafx-controls:${javafxVersion}:mac-aarch64"
-        implementation "org.openjfx:javafx-graphics:${javafxVersion}:mac-aarch64"
-        implementation "org.openjfx:javafx-fxml:${javafxVersion}:mac-aarch64"
-        implementation "org.openjfx:javafx-base:${javafxVersion}:mac-aarch64"
-
-
-
-    // HTTP Client (for AI service calls)
+    implementation "org.apache.groovy:groovy-all:$groovyVersion"
+    implementation "com.gluonhq:charm-glisten:$gluonGlistenVersion"
+    implementation "com.gluonhq.attach:display:$attachVersion"
+    implementation "com.gluonhq.attach:storage:$attachVersion"
+    implementation "com.gluonhq.attach:lifecycle:$attachVersion"
+    implementation "com.gluonhq.attach:statusbar:$attachVersion"
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.1.4'
-        implementation "org.apache.groovy:groovy-json:${groovyVersion}"
-
-    // Testing
     testImplementation 'org.spockframework:spock-core:2.3-groovy-4.0'
-        testImplementation 'junit:junit:4.13.2'
-}
-
-run {
-    systemProperty 'gluon.license.skip', 'true'
-    systemProperty 'gluon.tracking.skip', 'true'
-    doFirst {
-        jvmArgs = [
-            '--module-path', configurations.runtimeClasspath.filter { it.name.startsWith('javafx-') }.asPath,
-            '--add-modules', 'javafx.controls,javafx.fxml,javafx.graphics'
-        ]
-    }
-}
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
 }
 
 application {
-    mainClassName = 'com.aicalendar.Main'
+    // mobile entry point
+    mainClass = 'com.aicalendar.Main'
 }
 
-
-
-
+java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
 
 gluonfx {
-    graalvmHome = '/Users/chasenaples/Downloads/graalvm-java23-darwin-aarch64-gluon-23+25.1-dev/Contents/Home'
-    appIdentifier = 'com.aicalendar.mobile'
-    release {
-        // Android settings
-        appLabel = 'AICalendar'
-        versionCode = '1'
-        versionName = '1.0.0'
-
-        // iOS settings
-        bundleName = 'AICalendar'
-        bundleVersion = '1.0.0'
-        bundleShortVersion = '1.0.0'
-    }
-
-    // Gluon Attach services can be added here later if needed
-    // e.g., for accessing device-specific features
-    attachConfig {
-        //
-    }
-
-    // Define build targets
     target 'android'
     target 'ios'
 }

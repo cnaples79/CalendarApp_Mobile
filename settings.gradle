@@ -1,1 +1,10 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven {
+            url 'https://nexus.gluonhq.com/nexus/content/repositories/releases'
+        }
+    }
+}
+
 rootProject.name = 'CalendarApp_Mobile'
