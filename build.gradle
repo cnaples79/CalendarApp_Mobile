@@ -38,6 +38,10 @@ application {
     mainClass = 'com.aicalendar.Main'
     run {
         jvmArgs = ['--module-path', configurations.runtimeClasspath.asPath, '--add-modules', 'javafx.controls,javafx.fxml,javafx.graphics,javafx.base']
+        systemProperties = [
+            'glisten.license': 'false',
+            'glisten.tracking.disabled': 'true'
+        ]
     }
 }
 
