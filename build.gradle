@@ -94,6 +94,7 @@ application {
 
 
 gluonfx {
+    graalvmHome = '/Users/chasenaples/Downloads/graalvm-java23-darwin-aarch64-gluon-23+25.1-dev/Contents/Home'
     appIdentifier = 'com.aicalendar.mobile'
     release {
         // Android settings
