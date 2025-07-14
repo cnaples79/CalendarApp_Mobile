@@ -1,5 +1,6 @@
 package com.aicalendar.views;
 
+import com.gluonhq.charm.glisten.control.CharmListCell;
 import com.aicalendar.views.AppViewBase;
 import com.aicalendar.Event;
 import com.aicalendar.CalendarService;
@@ -15,6 +16,7 @@ import javafx.scene.layout.VBox;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Comparator;
@@ -33,7 +35,7 @@ public class CalendarView extends AppViewBase {
     private Label dateLabel;
 
     public CalendarView(AppManager appManager, CalendarService calendarService) {
-        super("CalendarView", appManager, calendarService);
+        super(AppViewBase.CALENDAR_VIEW, appManager, calendarService);
         LOG.info("Constructing CalendarView");
 
         try {
@@ -45,7 +47,7 @@ public class CalendarView extends AppViewBase {
             throw new RuntimeException(e);
         }
 
-        setUseSpacer(true);
+
 
         setOnShowing(e -> {
             LOG.info("CalendarView is showing");
@@ -58,63 +60,51 @@ public class CalendarView extends AppViewBase {
 
     @FXML
     public void initialize() {
-        eventList.setCellFactory(p -> new EventCell());
-        eventList.setComparator(Comparator.comparing(Event::getDateTime));
-        eventList.setHeadersFunction(event -> event.getDateTime().toLocalDate());
-        eventList.setHeaderCellFactory(p -> new DateHeaderCell());
+        eventList.setCellFactory(p -> new CharmListCell<Event>() {
+            private final ListTile tile = new ListTile();
+
+            @Override
+            public void updateItem(Event item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item != null && !empty) {
+                    tile.textProperty().setAll(item.getTitle(), item.getStartTime().toLocalTime().format(DateTimeFormatter.ofPattern("h:mm a")));
+                    setGraphic(tile);
+                } else {
+                    setGraphic(null);
+                }
+            }
+        });
+
+        eventList.setHeadersFunction(event -> event.getStartTime().toLocalDate());
+        eventList.setHeaderCellFactory(p -> new CharmListCell<Event>() {
+            private final Label label = new Label();
+            {
+                getStyleClass().add("date-header");
+            }
+            @Override
+            public void updateItem(Event item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item != null && !empty) {
+                    LocalDate headerDate = item.getStartTime().toLocalDate();
+                    if (headerDate != null) {
+                        label.setText(headerDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy")));
+                        setGraphic(label);
+                    } else {
+                        setGraphic(null);
+                    }
+                } else {
+                    setGraphic(null);
+                }
+            }
+        });
     }
 
     private void loadEvents() {
-        List<Event> eventsForToday = calendarService.getEventsForDate(LocalDate.now());
-        eventList.setItems(FXCollections.observableArrayList(eventsForToday));
-    }
-
-    private static class EventCell extends CharmListCell<Event> {
-        private final ListTile tile = new ListTile();
-        private final Label titleLabel = new Label();
-        private final Label timeLabel = new Label();
-
-        public EventCell() {
-            tile.setPrimaryGraphic(MaterialDesignIcon.EVENT.graphic());
-            tile.textProperty().setAll(titleLabel, timeLabel);
-            setText(null);
-        }
-
-        @Override
-        public void updateItem(Event item, boolean empty) {
-            super.updateItem(item, empty);
-            if (item != null && !empty) {
-                titleLabel.setText(item.getTitle());
-                timeLabel.setText(item.getDateTime().toLocalTime().format(DateTimeFormatter.ofPattern("h:mm a")));
-                setGraphic(tile);
-            } else {
-                setGraphic(null);
-            }
-        }
-    }
-
-    private static class DateHeaderCell extends CharmListCell<Event> {
-        private final Label label = new Label();
-
-        public DateHeaderCell() {
-            getStyleClass().add("date-header");
-            setGraphic(label);
-            setText(null);
-        }
-
-        @Override
-        public void updateItem(Event item, boolean empty) {
-            super.updateItem(item, empty);
-            if (item != null && getHeadersFunction() != null) {
-                LocalDate headerDate = getHeadersFunction().apply(item);
-                if (headerDate != null) {
-                    label.setText(headerDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)));
-                } else {
-                    label.setText("");
-                }
-            } else {
-                label.setText("");
-            }
+        LocalDate selectedDate = LocalDate.now();
+        if (selectedDate != null) {
+            LocalDateTime startOfDay = selectedDate.atStartOfDay();
+            LocalDateTime endOfDay = selectedDate.atTime(23, 59, 59);
+            eventList.setItems(FXCollections.observableArrayList(calendarService.getEvents(startOfDay, endOfDay)));
         }
     }
 }

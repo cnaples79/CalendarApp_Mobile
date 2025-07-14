@@ -21,7 +21,8 @@ application {
 dependencies {
     implementation 'org.apache.groovy:groovy:4.0.4'
     implementation 'org.apache.groovy:groovy-json:4.0.4'
-    implementation 'com.gluonhq:glisten:6.2.3'
+    implementation 'com.gluonhq:charm-glisten:6.2.3'
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
     implementation 'com.gluonhq.attach:display:4.0.13'
     implementation 'com.gluonhq.attach:storage:4.0.13'
     implementation 'com.gluonhq.attach:lifecycle:4.0.13'
@@ -54,22 +55,15 @@ gluonfx {
 
 
     release {
-        // for android
-        android {
-            settings {
-                appLabel = 'AI Calendar'
-                versionCode = 1
-                versionName = '1.0'
-            }
-        }
-        // for ios
-        ios {
-            settings {
-                bundleName = 'AI Calendar'
-                bundleVersion = '1.0'
-                bundleShortVersion = '1.0'
-                appIdentifier = 'com.aicalendar.mobile'
-            }
-        }
+        // Android
+        appLabel = 'AI Calendar'
+        versionCode = 1
+        versionName = '1.0'
+
+        // iOS
+        bundleName = 'AI Calendar'
+        bundleVersion = '1.0'
+        bundleShortVersion = '1.0'
+        appIdentifier = 'com.aicalendar.mobile'
     }
 }

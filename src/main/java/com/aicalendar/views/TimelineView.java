@@ -19,6 +19,7 @@ import javafx.scene.text.Font;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Comparator;
 import java.util.List;
@@ -33,7 +34,7 @@ public class TimelineView extends AppViewBase {
     private CharmListView<Event, LocalDate> timelineList;
 
     public TimelineView(AppManager appManager, CalendarService calendarService) {
-        super("TimelineView", appManager, calendarService);
+        super(AppViewBase.TIMELINE_VIEW, appManager, calendarService);
         LOG.info("Constructing TimelineView");
 
         try {
@@ -45,7 +46,7 @@ public class TimelineView extends AppViewBase {
             throw new RuntimeException(e);
         }
 
-        setUseSpacer(true);
+
 
         setOnShowing(e -> {
             LOG.info("TimelineView is showing");
@@ -55,10 +56,52 @@ public class TimelineView extends AppViewBase {
 
     @FXML
     private void initialize() {
-        timelineList.setCellFactory(p -> new TimelineEventCell());
-        timelineList.setComparator(Comparator.comparing(Event::getDateTime));
-        timelineList.setHeadersFunction(event -> event.getDateTime().toLocalDate());
-        timelineList.setHeaderCellFactory(p -> new DateHeaderCell());
+        timelineList.setComparator(Comparator.comparing(Event::getStartTime));
+        timelineList.setHeadersFunction(event -> event.getStartTime().toLocalDate());
+
+        timelineList.setCellFactory(p -> new CharmListCell<Event>() {
+            private final ListTile tile = new ListTile();
+            private final Label timeLabel = new Label();
+
+            {
+                tile.setPrimaryGraphic(timeLabel);
+            }
+
+            @Override
+            public void updateItem(Event item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item != null && !empty) {
+                    timeLabel.setText(item.getStartTime().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")));
+                    tile.textProperty().setAll(item.getTitle(), item.getDescription());
+                    setGraphic(tile);
+                } else {
+                    setGraphic(null);
+                }
+            }
+        });
+
+        timelineList.setHeaderCellFactory(p -> new CharmListCell<Event>() {
+            private final Label label = new Label();
+            {
+                getStyleClass().add("date-header");
+            }
+
+            @Override
+            public void updateItem(Event item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item != null && !empty) {
+                    LocalDate headerDate = item.getStartTime().toLocalDate();
+                    if (headerDate != null) {
+                        label.setText(headerDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy")));
+                        setGraphic(label);
+                    } else {
+                        setGraphic(null);
+                    }
+                } else {
+                    setGraphic(null);
+                }
+            }
+        });
     }
 
     private void loadEvents() {
@@ -84,56 +127,5 @@ public class TimelineView extends AppViewBase {
         });
 
         service.start();
-    }
-
-    private static class TimelineEventCell extends CharmListCell<Event> {
-        private final VBox container = new VBox();
-        private final Label timeLabel = new Label();
-        private final Label titleLabel = new Label();
-        private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
-
-        public TimelineEventCell() {
-            timeLabel.setFont(Font.font(14));
-            titleLabel.setFont(Font.font(16));
-            container.getChildren().addAll(timeLabel, titleLabel);
-            container.setPadding(new Insets(10));
-        }
-
-        @Override
-        public void updateItem(Event item, boolean empty) {
-            super.updateItem(item, empty);
-            if (empty || item == null) {
-                setGraphic(null);
-            } else {
-                timeLabel.setText(item.getDateTime().toLocalTime().format(TIME_FORMATTER));
-                titleLabel.setText(item.getTitle());
-                setGraphic(container);
-            }
-        }
-    }
-
-    private static class DateHeaderCell extends CharmListCell<Event> {
-        private final Label label = new Label();
-
-        public DateHeaderCell() {
-            getStyleClass().add("date-header");
-            setGraphic(label);
-            setText(null);
-        }
-
-        @Override
-        public void updateItem(Event item, boolean empty) {
-            super.updateItem(item, empty);
-            if (item != null && getHeadersFunction() != null) {
-                LocalDate headerDate = getHeadersFunction().apply(item);
-                if (headerDate != null) {
-                    label.setText(headerDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)));
-                } else {
-                    label.setText("");
-                }
-            } else {
-                label.setText("");
-            }
-        }
     }
 }

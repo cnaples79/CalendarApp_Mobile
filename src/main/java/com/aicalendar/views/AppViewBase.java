@@ -5,13 +5,15 @@ import com.gluonhq.charm.glisten.control.BottomNavigationButton;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.aicalendar.CalendarService;
-import com.aicalendar.services.CalendarService;
 import com.gluonhq.charm.glisten.application.AppManager;
-import com.gluonhq.charm.glisten.mvc.View;
 
 import java.util.logging.Logger;
 
 public abstract class AppViewBase extends View {
+
+    public static final String CALENDAR_VIEW = "Calendar";
+    public static final String CHAT_VIEW = "Chat";
+    public static final String TIMELINE_VIEW = "Timeline";
 
     private static final Logger LOG = Logger.getLogger(AppViewBase.class.getName());
 
@@ -19,7 +21,7 @@ public abstract class AppViewBase extends View {
     protected final CalendarService calendarService;
 
     public AppViewBase(String viewName, AppManager appManager, CalendarService calendarService) {
-        super(viewName);
+        super();
         LOG.info("Constructing AppViewBase for: " + viewName);
         this.appManager = appManager;
         this.calendarService = calendarService;

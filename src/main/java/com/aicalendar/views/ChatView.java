@@ -1,6 +1,7 @@
 package com.aicalendar.views;
 
 import com.aicalendar.AIService;
+import com.aicalendar.AIResponsePayload;
 import com.aicalendar.CalendarService;
 import com.gluonhq.charm.glisten.application.AppManager;
 import com.gluonhq.charm.glisten.control.CharmListCell;
@@ -38,7 +39,7 @@ public class ChatView extends AppViewBase {
     private final AIService aiService;
 
     public ChatView(AppManager appManager, CalendarService calendarService) {
-        super("ChatView", appManager, calendarService);
+        super(AppViewBase.CHAT_VIEW, appManager, calendarService);
         LOG.info("Constructing ChatView");
         this.aiService = new AIService(calendarService);
 
@@ -51,7 +52,7 @@ public class ChatView extends AppViewBase {
             throw new RuntimeException(e);
         }
 
-        setUseSpacer(true);
+
 
         setOnShowing(e -> {
             LOG.info("ChatView is showing");
@@ -76,12 +77,12 @@ public class ChatView extends AppViewBase {
         messageInput.clear();
         sendButton.setDisable(true);
 
-        Service<String> service = new Service<>() {
+        Service<AIResponsePayload> service = new Service<>() {
             @Override
-            protected Task<String> createTask() {
+            protected Task<AIResponsePayload> createTask() {
                 return new Task<>() {
                     @Override
-                    protected String call() throws Exception {
+                    protected AIResponsePayload call() throws Exception {
                         return aiService.getAIResponse(text);
                     }
                 };
@@ -89,10 +90,11 @@ public class ChatView extends AppViewBase {
         };
 
         service.setOnSucceeded(e -> {
-            String aiResponse = (String) e.getSource().getValue();
-            messages.add(new ChatMessage(aiResponse, false));
-            // This will trigger the listeners in CalendarView and TimelineView
-            calendarService.eventsUpdatedProperty().set(!calendarService.eventsUpdatedProperty().get());
+            AIResponsePayload aiResponse = (AIResponsePayload) e.getSource().getValue();
+            messages.add(new ChatMessage(aiResponse.getTextResponse(), false));
+            if (aiResponse.isEventCreated() || aiResponse.isEventModified()) {
+                calendarService.eventsUpdatedProperty().set(!calendarService.eventsUpdatedProperty().get());
+            }
             sendButton.setDisable(false);
         });
 
