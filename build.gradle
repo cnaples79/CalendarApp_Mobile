@@ -51,7 +51,7 @@ sourceSets {
 
 gluonfx {
     reflectionList = [ 'com.aicalendar.**' ]
-    resourcesList = [ '.*\\.fxml', '.*\\.css', 'icon.png' ]
+    resourcesList = [ '.*\\\\.fxml', '.*\\\\.css', 'icon.png' ]
 
 
     release {

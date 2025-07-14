@@ -27,27 +27,41 @@ public class Main extends Application {
 
     @Override
     public void init() {
-        LOG.info("Initializing Application");
-        LOG.info("Creating Calendar View Factory");
-        appManager.addViewFactory(CALENDAR_VIEW, () -> new CalendarView(calendarService));
-        LOG.info("Creating Chat View Factory");
-        appManager.addViewFactory(CHAT_VIEW, () -> new ChatView(calendarService));
-        LOG.info("Creating Timeline View Factory");
-        appManager.addViewFactory(TIMELINE_VIEW, () -> new TimelineView(calendarService));
+        try {
+            LOG.info("Initializing Application");
+            LOG.info("Creating Calendar View Factory");
+            appManager.addViewFactory(CALENDAR_VIEW, () -> new CalendarView(calendarService));
+            LOG.info("Creating Chat View Factory");
+            appManager.addViewFactory(CHAT_VIEW, () -> new ChatView(calendarService));
+            LOG.info("Creating Timeline View Factory");
+            appManager.addViewFactory(TIMELINE_VIEW, () -> new TimelineView(calendarService));
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE, "Failed to initialize views", e);
+        }
     }
 
     @Override
-    public void start(Stage stage) throws Exception {
-        appManager.start(stage);
+    public void start(Stage stage) {
+        try {
+            appManager.start(stage);
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE, "Failed to start application", e);
+            e.printStackTrace();
+        }
     }
 
     private void postInit(Scene scene) {
-        AppViewBase.injectAppManager(appManager);
-        LOG.info("Post-Initializing Application");
-        Swatch.BLUE.assignTo(scene);
-        scene.getStylesheets().add(Main.class.getResource("style.css").toExternalForm());
-        ((Stage) scene.getWindow()).getIcons().add(new Image(Main.class.getResourceAsStream("/icon.png")));
-        ((Stage) scene.getWindow()).setTitle("AI Calendar");
+        try {
+            AppViewBase.injectAppManager(appManager);
+            LOG.info("Post-Initializing Application");
+            Swatch.BLUE.assignTo(scene);
+            scene.getStylesheets().add(Main.class.getResource("style.css").toExternalForm());
+            ((Stage) scene.getWindow()).getIcons().add(new Image(Main.class.getResourceAsStream("/icon.png")));
+            ((Stage) scene.getWindow()).setTitle("AI Calendar");
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE, "Failed during post-init", e);
+            e.printStackTrace();
+        }
     }
 
     public static void main(String[] args) {
