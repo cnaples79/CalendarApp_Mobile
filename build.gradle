@@ -5,6 +5,8 @@ plugins {
     id 'groovy'
 }
 
+java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
+
 repositories {
     mavenCentral()
     maven {
@@ -47,22 +49,27 @@ sourceSets {
 }
 
 gluonfx {
-    enableLicenseVerification = false
-    enableTracking = false
-    graalvmHome = '/Users/chasenaples/Downloads/graalvm-svm-java23-gluon-24.1.0-dev-macos-aarch64'
+    reflectionList = [ 'com.aicalendar.**' ]
+    resourcesList = [ '.*\\.fxml', '.*\\.css', 'icon.png' ]
+
+
     release {
         // for android
         android {
-            appLabel = 'AI Calendar'
-            versionCode = '1'
-            versionName = '1.0'
+            settings {
+                appLabel = 'AI Calendar'
+                versionCode = 1
+                versionName = '1.0'
+            }
         }
         // for ios
         ios {
-            bundleName = 'AI Calendar'
-            bundleVersion = '1.0'
-            bundleShortVersion = '1.0'
-            appIdentifier = 'com.aicalendar.mobile'
+            settings {
+                bundleName = 'AI Calendar'
+                bundleVersion = '1.0'
+                bundleShortVersion = '1.0'
+                appIdentifier = 'com.aicalendar.mobile'
+            }
         }
     }
 }

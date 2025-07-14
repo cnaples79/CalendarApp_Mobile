@@ -1,7 +1,7 @@
 package com.aicalendar.views;
 
-import com.aicalendar.models.Event;
-import com.aicalendar.services.CalendarService;
+import com.aicalendar.Event;
+import com.aicalendar.CalendarService;
 import com.gluonhq.charm.glisten.application.AppManager;
 import com.gluonhq.charm.glisten.control.CharmListCell;
 import com.gluonhq.charm.glisten.control.CharmListView;
@@ -9,7 +9,12 @@ import com.gluonhq.charm.glisten.control.ListTile;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
+import javafx.geometry.Insets;
 import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -40,6 +45,8 @@ public class TimelineView extends AppViewBase {
             throw new RuntimeException(e);
         }
 
+        setUseSpacer(true);
+
         setOnShowing(e -> {
             LOG.info("TimelineView is showing");
             loadEvents();
@@ -55,10 +62,25 @@ public class TimelineView extends AppViewBase {
     }
 
     private void loadEvents() {
-        List<Event> allEvents = calendarService.getAllEvents();
-        timelineList.setItems(FXCollections.observableArrayList(allEvents));
-            service.getException().printStackTrace();
-            timelineListView.setPlaceholder(new Label("Error loading timeline."));
+        Service<List<Event>> service = new Service<>() {
+            @Override
+            protected Task<List<Event>> createTask() {
+                return new Task<>() {
+                    @Override
+                    protected List<Event> call() throws Exception {
+                        return calendarService.getAllEvents();
+                    }
+                };
+            }
+        };
+
+        service.setOnSucceeded(e -> {
+            timelineList.setItems(FXCollections.observableArrayList((List<Event>) e.getSource().getValue()));
+        });
+
+        service.setOnFailed(e -> {
+            LOG.log(Level.SEVERE, "Failed to load timeline events", service.getException());
+            timelineList.setPlaceholder(new Label("Error loading timeline."));
         });
 
         service.start();
@@ -83,9 +105,34 @@ public class TimelineView extends AppViewBase {
             if (empty || item == null) {
                 setGraphic(null);
             } else {
-                timeLabel.setText(item.getStartTime().format(TIME_FORMATTER));
+                timeLabel.setText(item.getDateTime().toLocalTime().format(TIME_FORMATTER));
                 titleLabel.setText(item.getTitle());
                 setGraphic(container);
+            }
+        }
+    }
+
+    private static class DateHeaderCell extends CharmListCell<Event> {
+        private final Label label = new Label();
+
+        public DateHeaderCell() {
+            getStyleClass().add("date-header");
+            setGraphic(label);
+            setText(null);
+        }
+
+        @Override
+        public void updateItem(Event item, boolean empty) {
+            super.updateItem(item, empty);
+            if (item != null && getHeadersFunction() != null) {
+                LocalDate headerDate = getHeadersFunction().apply(item);
+                if (headerDate != null) {
+                    label.setText(headerDate.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)));
+                } else {
+                    label.setText("");
+                }
+            } else {
+                label.setText("");
             }
         }
     }

@@ -1,8 +1,8 @@
 package com.aicalendar.views;
 
-import com.aicalendar.abstracts.AppViewBase;
-import com.aicalendar.models.Event;
-import com.aicalendar.services.CalendarService;
+import com.aicalendar.views.AppViewBase;
+import com.aicalendar.Event;
+import com.aicalendar.CalendarService;
 import com.gluonhq.charm.glisten.application.AppManager;
 import com.gluonhq.charm.glisten.control.CharmListView;
 import com.gluonhq.charm.glisten.control.ListTile;
@@ -44,6 +44,8 @@ public class CalendarView extends AppViewBase {
             LOG.log(Level.SEVERE, "Error loading FXML for CalendarView", e);
             throw new RuntimeException(e);
         }
+
+        setUseSpacer(true);
 
         setOnShowing(e -> {
             LOG.info("CalendarView is showing");

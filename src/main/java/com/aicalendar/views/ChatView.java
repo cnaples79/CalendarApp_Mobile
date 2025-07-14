@@ -1,8 +1,7 @@
 package com.aicalendar.views;
 
-import com.aicalendar.models.ChatMessage;
-import com.aicalendar.services.AIService;
-import com.aicalendar.services.CalendarService;
+import com.aicalendar.AIService;
+import com.aicalendar.CalendarService;
 import com.gluonhq.charm.glisten.application.AppManager;
 import com.gluonhq.charm.glisten.control.CharmListCell;
 import com.gluonhq.charm.glisten.control.CharmListView;
@@ -14,6 +13,8 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
 import javafx.scene.layout.HBox;
 
 import java.io.IOException;
@@ -50,6 +51,8 @@ public class ChatView extends AppViewBase {
             throw new RuntimeException(e);
         }
 
+        setUseSpacer(true);
+
         setOnShowing(e -> {
             LOG.info("ChatView is showing");
             chatArea.setItems(messages);
@@ -58,30 +61,44 @@ public class ChatView extends AppViewBase {
 
     @FXML
     private void initialize() {
-        chatArea.setCellFactory(p -> new ChatMessageCell());
+        chatArea.setCellFactory(p -> new MessageCell());
         sendButton.setOnAction(e -> sendMessage());
         messageInput.setOnAction(e -> sendMessage());
     }
 
     private void sendMessage() {
         String text = messageInput.getText().trim();
-        if (!text.isEmpty()) {
-            messages.add(new ChatMessage(text, true));
-            messageInput.clear();
+        if (text.isEmpty()) {
+            return;
+        }
 
-            String aiResponse = aiService.getAIResponse(text);
-            messages.add(new ChatMessage(aiResponse, false));
-                // This will trigger the listeners in CalendarView and TimelineView
-                calendarService.eventsUpdatedProperty().set(!calendarService.eventsUpdatedProperty().get());
+        messages.add(new ChatMessage(text, true));
+        messageInput.clear();
+        sendButton.setDisable(true);
+
+        Service<String> service = new Service<>() {
+            @Override
+            protected Task<String> createTask() {
+                return new Task<>() {
+                    @Override
+                    protected String call() throws Exception {
+                        return aiService.getAIResponse(text);
+                    }
+                };
             }
+        };
 
+        service.setOnSucceeded(e -> {
+            String aiResponse = (String) e.getSource().getValue();
+            messages.add(new ChatMessage(aiResponse, false));
+            // This will trigger the listeners in CalendarView and TimelineView
+            calendarService.eventsUpdatedProperty().set(!calendarService.eventsUpdatedProperty().get());
             sendButton.setDisable(false);
         });
 
         service.setOnFailed(e -> {
             messages.add(new ChatMessage("Sorry, something went wrong. Please try again.", false));
-            System.err.println("Failed to get AI response: " + service.getException());
-            service.getException().printStackTrace();
+            LOG.log(Level.SEVERE, "Failed to get AI response", service.getException());
             sendButton.setDisable(false);
         });
 
