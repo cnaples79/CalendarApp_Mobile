@@ -34,8 +34,8 @@ public class CalendarView extends AppViewBase {
     @FXML
     private Label dateLabel;
 
-    public CalendarView(AppManager appManager, CalendarService calendarService) {
-        super(AppViewBase.CALENDAR_VIEW, appManager, calendarService);
+    public CalendarView(CalendarService calendarService) {
+        super(calendarService);
         LOG.info("Constructing CalendarView");
 
         try {

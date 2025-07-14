@@ -3,6 +3,7 @@ package com.aicalendar;
 import com.aicalendar.views.CalendarView;
 import com.aicalendar.views.ChatView;
 import com.aicalendar.views.TimelineView;
+import com.aicalendar.views.AppViewBase;
 import com.aicalendar.CalendarService;
 import com.gluonhq.charm.glisten.application.AppManager;
 import com.gluonhq.charm.glisten.visual.Swatch;
@@ -28,11 +29,11 @@ public class Main extends Application {
     public void init() {
         LOG.info("Initializing Application");
         LOG.info("Creating Calendar View Factory");
-        appManager.addViewFactory(CALENDAR_VIEW, () -> new CalendarView(appManager, calendarService));
+        appManager.addViewFactory(CALENDAR_VIEW, () -> new CalendarView(calendarService));
         LOG.info("Creating Chat View Factory");
-        appManager.addViewFactory(CHAT_VIEW, () -> new ChatView(appManager, calendarService));
+        appManager.addViewFactory(CHAT_VIEW, () -> new ChatView(calendarService));
         LOG.info("Creating Timeline View Factory");
-        appManager.addViewFactory(TIMELINE_VIEW, () -> new TimelineView(appManager, calendarService));
+        appManager.addViewFactory(TIMELINE_VIEW, () -> new TimelineView(calendarService));
     }
 
     @Override
@@ -41,6 +42,7 @@ public class Main extends Application {
     }
 
     private void postInit(Scene scene) {
+        AppViewBase.injectAppManager(appManager);
         LOG.info("Post-Initializing Application");
         Swatch.BLUE.assignTo(scene);
         scene.getStylesheets().add(Main.class.getResource("style.css").toExternalForm());

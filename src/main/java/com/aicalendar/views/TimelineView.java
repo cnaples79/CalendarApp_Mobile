@@ -33,8 +33,8 @@ public class TimelineView extends AppViewBase {
     @FXML
     private CharmListView<Event, LocalDate> timelineList;
 
-    public TimelineView(AppManager appManager, CalendarService calendarService) {
-        super(AppViewBase.TIMELINE_VIEW, appManager, calendarService);
+    public TimelineView(CalendarService calendarService) {
+        super(calendarService);
         LOG.info("Constructing TimelineView");
 
         try {

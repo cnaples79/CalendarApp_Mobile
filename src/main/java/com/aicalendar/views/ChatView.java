@@ -38,8 +38,8 @@ public class ChatView extends AppViewBase {
     private final ObservableList<ChatMessage> messages = FXCollections.observableArrayList();
     private final AIService aiService;
 
-    public ChatView(AppManager appManager, CalendarService calendarService) {
-        super(AppViewBase.CHAT_VIEW, appManager, calendarService);
+    public ChatView(CalendarService calendarService) {
+        super(calendarService);
         LOG.info("Constructing ChatView");
         this.aiService = new AIService(calendarService);
 
